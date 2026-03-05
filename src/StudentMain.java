@@ -1,5 +1,11 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 
 class Student{
     private String name;
@@ -72,6 +78,9 @@ class Student{
                 "\nCgpa: " + cgpa +
                 "\nBacklogs: " + backlogs +
                 "\nAddress: " + address;
+    }
+    public String toCSV(){
+        return name+","+usn+","+dob+","+cgpa+","+backlogs+","+address;
     }
 }
 class StudentManager{
@@ -161,12 +170,49 @@ class StudentManager{
             System.out.println(st);
         }
     }
+    public void saveToFile(){
+        try{
+            FileWriter fw = new FileWriter("src/students.csv");
+            BufferedWriter bw = new BufferedWriter(fw);
+            for(Student s:students){
+                bw.write(s.toCSV());
+                bw.newLine();
+            }
+            bw.close();
+            System.out.println("data saved succesfully!");
+        }
+        catch(IOException e){
+            System.out.println("Error occured while writing data onto file: "+e);
+        }
+    }
+    public void loadfromFile(){
+        try{
+            FileReader fr = new FileReader("src/students.csv");
+            BufferedReader br = new BufferedReader(fr);
+            String line;
+            while((line=br.readLine())!=null){
+                String parts[]=line.split(",");
+                Student s = new Student(parts[0],parts[1],parts[2],Double.parseDouble(parts[3]),
+                        Integer.parseInt(parts[4]),parts[5]);
+                if(!addStudent(s)) {
+                    System.out.println("Student with Usn" + parts[1] + " already exists...!!!");
+                }
+            }
+            br.close();
+        }
+        catch(FileNotFoundException e){
+            System.out.println("No existing data found, starting fresh!");
+        }
+        catch(IOException e){
+            System.out.println("Error loading file: " + e);
+        }
+    }
 }
 public class StudentMain {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         StudentManager manager = new StudentManager();
-        sampledata(manager);
+        manager.loadfromFile();
         while (true) {
             System.out.println("------- Student Database Menu --------" +
                     "\n1. Add a Student " +
@@ -229,6 +275,7 @@ public class StudentMain {
                     break;
                 case 6:
                     System.out.println("Exiting Proogram.....");
+                    manager.saveToFile();
                     sc.close();
                     System.exit(0);
                     break;
@@ -237,11 +284,5 @@ public class StudentMain {
             }
 
         }
-    }
-    // SAMPLE DATA
-    private static void sampledata(StudentManager manager) {
-        manager.addStudent(new Student("Samartha M", "4MH24IS089", "03-12-2006", 9.65, 0, "Mysore"));
-        manager.addStudent(new Student("Tushaar Singavi", "4MH24IS108", "21-03-2006", 9.4, 2, "Mumbai"));
-        manager.addStudent(new Student("Yashwanth Gowda", "4MH24IS115", "13-03-2006", 9.2, 4, "Delhi"));
     }
 }
