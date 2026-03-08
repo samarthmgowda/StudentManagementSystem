@@ -1,12 +1,8 @@
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Collections;
-import java.io.FileWriter;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.FileReader;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
+import java.util.InputMismatchException;
 
 class Student{
     private String name;
@@ -119,6 +115,7 @@ class StudentManager{
         Student s = searchStudent(Usn);
         if(s==null){
             System.out.println("Student not found...!!!");
+            return;
         }
         boolean updating = true;
         while(updating){
@@ -147,6 +144,7 @@ class StudentManager{
                 case 4:
                     System.out.print("Enter new Cgpa : ");
                     s.setCgpa(sc.nextDouble());
+                    sc.nextLine();
                     break;
                 case 5:
                     System.out.print("Enter new Backlogs : ");
@@ -175,6 +173,8 @@ class StudentManager{
         try{
             FileWriter fw = new FileWriter("src/students.csv");
             BufferedWriter bw = new BufferedWriter(fw);
+            bw.write("Name,USN,DOB,CGPA,Backlogs,Address");
+            bw.newLine();
             for(Student s:students){
                 bw.write(s.toCSV());
                 bw.newLine();
@@ -191,6 +191,7 @@ class StudentManager{
             FileReader fr = new FileReader("src/students.csv");
             BufferedReader br = new BufferedReader(fr);
             String line;
+            br.readLine(); // to skip the first line header
             while((line=br.readLine())!=null){
                 String parts[]=line.split(",");
                 Student s = new Student(parts[0],parts[1],parts[2],Double.parseDouble(parts[3]),
@@ -241,8 +242,40 @@ class StudentManager{
     public void topbottomPerformers(){
         ArrayList<Student> temp = new ArrayList<>(students);
         Collections.sort(temp,(s1,s2)->Double.compare(s2.getCgpa(),s1.getCgpa()));
-        System.out.println("Top Performer -> "+students.get(0));
-        System.out.println("Bottom Performer -> "+students.get(students.size()-1));
+        if(temp.isEmpty()){
+            System.out.println("No students available to analyze.");
+            return;
+        }
+        System.out.println("Top Performer -> "+temp.get(0));
+        System.out.println("Bottom Performer -> "+temp.get(temp.size()-1));
+    }
+    public void viewStatistics(){
+        try {
+            ProcessBuilder pb = new ProcessBuilder("python", "visualize.py");
+            pb.directory(new File("C:\\Users\\Samarth\\Documents\\StudentManagementSystem"));
+            Process p = pb.start();
+            p.waitFor();
+        }
+        catch (IOException e){
+            System.out.println("Unable to Show Statistics");
+        }
+        catch (InterruptedException e){
+            System.out.println("Process interrupted!");
+        }
+    }
+    public void generatereport(){
+        try {
+            ProcessBuilder pb = new ProcessBuilder("python", "visualize.py", "report");
+            pb.directory(new File("C:\\Users\\Samarth\\Documents\\StudentManagementSystem"));
+            Process p = pb.start();
+            p.waitFor();
+        }
+        catch (IOException e){
+            System.out.println("Unable to Generate Report");
+        }
+        catch (InterruptedException e){
+            System.out.println("Process interrupted!");
+        }
     }
 }
 public class StudentMain {
@@ -250,84 +283,103 @@ public class StudentMain {
         Scanner sc = new Scanner(System.in);
         StudentManager manager = new StudentManager();
         manager.loadfromFile();
+        System.out.println("Student Management System - v1.0");
         while (true) {
-            System.out.println("------- Student Database Menu --------" +
-                    "\n1. Add a Student " +
-                    "\n2. Search a Student " +
-                    "\n3. Display Students "+
-                    "\n4. Delete Students "+
-                    "\n5. Update" +
-                    "\n6. Exit"+
-                    "\n7. Sorting"+
-                    "\n8. Top & Bottom performers"+
-                    "\nEnter your Choice : ");
-            System.out.flush();
-            int ch = sc.nextInt();
-            sc.nextLine();
-            switch (ch) {
-                case 1:
-                    System.out.println("Enter student Details :-");
-                    System.out.print("Name : ");
-                    String name = sc.nextLine();
-                    System.out.print("Dob : ");
-                    String dob = sc.nextLine();
-                    System.out.print("Usn : ");
-                    String usn = sc.nextLine();
-                    System.out.print("Address : ");
-                    String address = sc.nextLine();
-                    System.out.print("Cgpa : ");
-                    double cgpa = sc.nextDouble();
-                    System.out.print("Backlogs : ");
-                    int backlogs = sc.nextInt();
-                    sc.nextLine();
-                    Student s = new Student(name, usn, dob, cgpa, backlogs, address);
-                    if (manager.addStudent(s)) {
-                        System.out.println("Student added succesfully");
-                    } else
-                        System.out.println("Student with Usn : " + usn + " already exist");
-                    break;
-                case 2:
-                    System.out.print("Enter the Usn to search : ");
-                    String searchusn = sc.nextLine();
-                    Student found = manager.searchStudent(searchusn);
-                    if (found != null) {
-                        System.out.println("Student found : " + found);
-                    } else
-                        System.out.println("Student not found....!!!");
-                    break;
-                case 3:
-                    manager.displayAllStudents();
-                    break;
-                case 4:
-                    System.out.println("Enter Usn to delete : ");
-                    String deleteusn=sc.nextLine();
-                    if(manager.deleteStudent(deleteusn)){
-                        System.out.println("Student Deleted Succesfully...!!!");
-                    }
-                    else
-                        System.out.println("Student with Usn : "+deleteusn+" not found...!!!");
-                    break;
-                case 5:
-                    System.out.println("Enter Usn of Student to update : ");
-                    String dusn=sc.nextLine();
-                    manager.UpdateStudent(dusn,sc);
-                    break;
-                case 6:
-                    System.out.println("Exiting Program.....");
-                    manager.saveToFile();
-                    sc.close();
-                    System.exit(0);
-                    break;
-                case 7:
-                    manager.sortStudents(sc);
-                    break;
-                case 8:
-                    manager.topbottomPerformers();
-                    break;
-                default:
-                    System.out.println("Invalid Choice....!!!");
-            }
+            try {
+                System.out.println("------- Student Database Menu --------" +
+                        "\n1. Add a Student " +
+                        "\n2. Search a Student " +
+                        "\n3. Display Students " +
+                        "\n4. Delete Students " +
+                        "\n5. Update" +
+                        "\n6. Exit" +
+                        "\n7. Sorting" +
+                        "\n8. Top & Bottom performers" +
+                        "\n9. Show Statistics" +
+                        "\n10. Generate Report" +
+                        "\nEnter your Choice : ");
+                System.out.flush();
+                int ch = sc.nextInt();
+                sc.nextLine();
+                switch (ch) {
+                    case 1:
+                        System.out.println("Enter student Details :-");
+                        System.out.print("Name : ");
+                        String name = sc.nextLine();
+                        System.out.print("Dob : ");
+                        String dob = sc.nextLine();
+                        System.out.print("Usn : ");
+                        String usn = sc.nextLine();
+                        System.out.print("Address : ");
+                        String address = sc.nextLine();
+                        System.out.print("Cgpa : ");
+                        double cgpa = sc.nextDouble();
+                        System.out.print("Backlogs : ");
+                        int backlogs = sc.nextInt();
+                        sc.nextLine();
+                        Student s = new Student(name, usn, dob, cgpa, backlogs, address);
+                        if (manager.addStudent(s)) {
+                            System.out.println("Student added succesfully");
+                            manager.saveToFile();
+                        } else
+                            System.out.println("Student with Usn : " + usn + " already exist");
+                        break;
+                    case 2:
+                        System.out.print("Enter the Usn to search : ");
+                        String searchusn = sc.nextLine();
+                        Student found = manager.searchStudent(searchusn);
+                        if (found != null) {
+                            System.out.println("Student found : " + found);
+                        } else
+                            System.out.println("Student not found....!!!");
+                        break;
+                    case 3:
+                        manager.displayAllStudents();
+                        break;
+                    case 4:
+                        System.out.println("Enter Usn to delete : ");
+                        String deleteusn = sc.nextLine();
+                        if (manager.deleteStudent(deleteusn)) {
+                            System.out.println("Student Deleted Succesfully...!!!");
+                            manager.saveToFile();
+                        } else
+                            System.out.println("Student with Usn : " + deleteusn + " not found...!!!");
+                        break;
+                    case 5:
+                        System.out.println("Enter Usn of Student to update : ");
+                        String dusn = sc.nextLine();
+                        manager.UpdateStudent(dusn, sc);
+                        manager.saveToFile();
+                        break;
+                    case 6:
+                        System.out.println("Exiting Program.....");
+                        sc.close();
+                        System.exit(0);
+                        break;
+                    case 7:
+                        manager.sortStudents(sc);
+                        break;
+                    case 8:
+                        manager.topbottomPerformers();
+                        break;
+                    case 9:
+                        manager.saveToFile();
+                        System.out.println("Generating visualizations...");
+                        manager.viewStatistics();
+                        break;
+                    case 10:
+                        manager.saveToFile();
+                        manager.generatereport();
+                        System.out.println("Generated Report Succesfully");
+                        break;
+                    default:
+                        System.out.println("Invalid Choice....!!!");
+                }
 
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input! Please enter a valid input...!!!");
+                sc.nextLine();
+            }
         }
     }
 }
