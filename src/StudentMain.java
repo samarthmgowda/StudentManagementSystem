@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Collections;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -207,6 +208,42 @@ class StudentManager{
             System.out.println("Error loading file: " + e);
         }
     }
+    public void sortStudents(Scanner sc){
+        System.out.println("1. Sort by Cgpa\n2. Sort by Name\nEnter your Choice");
+        int chs = sc.nextInt();
+        System.out.println("1. Ascending\n2. Descending\nEnter your Choice");
+        int chs2 = sc.nextInt();
+        switch (chs){
+            case 1:
+                if(chs2==1) {
+                    Collections.sort(students, (s1, s2) -> Double.compare(s1.getCgpa(), s2.getCgpa()));
+                    displayAllStudents();
+                }
+                else {
+                    Collections.sort(students, (s1, s2) -> Double.compare(s2.getCgpa(), s1.getCgpa()));
+                    displayAllStudents();
+                }
+                break;
+            case 2:
+                if(chs2==1) {
+                    Collections.sort(students, (s1, s2) -> s1.getName().compareTo(s2.getName()));
+                    displayAllStudents();
+                }
+                else {
+                    Collections.sort(students, (s1, s2) -> s2.getName().compareTo(s1.getName()));
+                    displayAllStudents();
+                }
+                break;
+            default:
+                System.out.println("Entered invalid choice...!!!");
+        }
+    }
+    public void topbottomPerformers(){
+        ArrayList<Student> temp = new ArrayList<>(students);
+        Collections.sort(temp,(s1,s2)->Double.compare(s2.getCgpa(),s1.getCgpa()));
+        System.out.println("Top Performer -> "+students.get(0));
+        System.out.println("Bottom Performer -> "+students.get(students.size()-1));
+    }
 }
 public class StudentMain {
     public static void main(String[] args) {
@@ -221,6 +258,8 @@ public class StudentMain {
                     "\n4. Delete Students "+
                     "\n5. Update" +
                     "\n6. Exit"+
+                    "\n7. Sorting"+
+                    "\n8. Top & Bottom performers"+
                     "\nEnter your Choice : ");
             System.out.flush();
             int ch = sc.nextInt();
@@ -274,10 +313,16 @@ public class StudentMain {
                     manager.UpdateStudent(dusn,sc);
                     break;
                 case 6:
-                    System.out.println("Exiting Proogram.....");
+                    System.out.println("Exiting Program.....");
                     manager.saveToFile();
                     sc.close();
                     System.exit(0);
+                    break;
+                case 7:
+                    manager.sortStudents(sc);
+                    break;
+                case 8:
+                    manager.topbottomPerformers();
                     break;
                 default:
                     System.out.println("Invalid Choice....!!!");
