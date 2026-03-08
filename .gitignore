@@ -2,3 +2,6 @@
 out/
 *.class
 src/students.csv
+*.png
+student_report.pdf
+.ipnyb_checkpoints/
