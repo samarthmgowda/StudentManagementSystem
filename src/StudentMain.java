@@ -274,8 +274,51 @@ class StudentManager{
             System.out.println("Unable to Generate Report");
         }
         catch (InterruptedException e){
-            System.out.println("Process interrupted!");
+            System.out.println("Process interrupted...!!!");
         }
+    }
+    public void departmentStatistics(){
+        if(students.isEmpty()){
+            System.out.println("No Students Found...!!!");
+            return;
+        }
+        Student hcgpa=students.get(0),lcgpa=students.get(0);
+        int studwbck=0;
+        double totalcpa=0;
+        for(Student s : students ){
+            totalcpa+=s.getCgpa();
+            if(s.getCgpa()>hcgpa.getCgpa())
+                hcgpa=s;
+            if(s.getCgpa()<lcgpa.getCgpa())
+                lcgpa=s;
+            if(s.getBacklogs()>0)
+                studwbck++;
+        }
+        System.out.println("===== Department Statistics ====="+
+                "\nTotal Students           : "+students.size()+
+                "\nAverage CGPA             : "+String.format("%.2f",totalcpa/students.size())+
+                "\nHighest CGPA             : "+hcgpa.getCgpa()+" "+hcgpa.getName()+" ("+hcgpa.getUsn()+")"+
+                "\nLowest CGPA              : "+lcgpa.getCgpa()+" "+lcgpa.getName()+" ("+lcgpa.getUsn()+")"+
+                "\nStudents with Backlog    : "+studwbck+
+                "\nStudents without Backlog : "+(students.size()-studwbck)+
+                "\n===================================");
+    }
+    public void studentReportCard(Scanner sc){
+        System.out.print("Enter the USN : ");
+        String usn=sc.nextLine();
+        Student s = searchStudent(usn);
+        if(s==null){
+            System.out.println("Student not found...!!!");
+            return;
+        }
+        System.out.println("======== Student Report Card ========"+
+                "\nName          : "+s.getName()+
+                "\nUSN           : "+s.getUsn()+
+                "\nDate of Birth : "+s.getDob()+
+                "\nCGPA          : "+s.getCgpa()+
+                "\nBacklogs      : "+s.getBacklogs()+
+                "\nAddress       : "+s.getAddress()+
+                "\n====================================");
     }
 }
 public class StudentMain {
@@ -297,6 +340,7 @@ public class StudentMain {
                         "\n8. Top & Bottom performers" +
                         "\n9. Show Statistics" +
                         "\n10. Generate Report" +
+                        "\n11. Department Statistics"+
                         "\nEnter your Choice : ");
                 System.out.flush();
                 int ch = sc.nextInt();
@@ -371,6 +415,10 @@ public class StudentMain {
                         manager.saveToFile();
                         manager.generatereport();
                         System.out.println("Generated Report Succesfully");
+                        break;
+                    case 11:
+                        manager.departmentStatistics();
+                        manager.studentReportCard(sc);
                         break;
                     default:
                         System.out.println("Invalid Choice....!!!");
