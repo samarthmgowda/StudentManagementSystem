@@ -111,6 +111,23 @@ class StudentManager{
         }
         return null;
     }
+    public void searchByName(Scanner sc){
+        System.out.print("Enter Name to search : ");
+        String name=sc.nextLine();
+        System.out.println("==== Search Results ====");
+        System.out.printf("%-25s %-15s %-10s %-10s%n","Name","USN","CGPA","Backlogs");
+        System.out.println("------------------------");
+        boolean found=false;
+        for(Student s:students){
+            if(s.getName().toLowerCase().contains(name.toLowerCase())){
+                found=true;
+                System.out.printf("%-25s %-15s %-10s %-10s%n",s.getName(),s.getUsn(),s.getCgpa(),s.getBacklogs());
+            }
+        }
+        if(!found)
+            System.out.println("No Student found with Name: "+name);
+        System.out.println("------------------------");
+    }
     public void UpdateStudent(String Usn,Scanner sc){
         Student s = searchStudent(Usn);
         if(s==null){
@@ -320,6 +337,68 @@ class StudentManager{
                 "\nAddress       : "+s.getAddress()+
                 "\n====================================");
     }
+    public void backlogStudentsList(){
+        int bckstud=0;
+        if(students.isEmpty()){
+            System.out.println("No Students found...!!!");
+            return;
+        }
+        System.out.println("======== Students with Backlogs ========");
+        System.out.printf("%-25s %-15s %-10s%n","Name","USN","Backlogs");
+        System.out.println("---------------------------------------------");
+        for(Student s:students){
+            if(s.getBacklogs()>0){
+                bckstud++;
+                System.out.printf("%-25s %-15s %-10s%n",s.getName(),s.getUsn(),s.getBacklogs());
+            }
+        }
+        System.out.println("---------------------------------------------");
+        System.out.println("Total number of Students with Backlogs : "+bckstud);
+        System.out.println("========================================");
+    }
+    public void filterByCGPA(double mincgpa,double maxcgpa,Scanner sc){
+        System.out.println("==== Students in CGPA range "+mincgpa+" - "+maxcgpa+" ====");
+        System.out.printf("%-25s %-15s %-10.2f %-10s%n","Name","USN","CGPA","Backlogs");
+        System.out.println("----------------------------------------------");
+        boolean found = false;
+        ArrayList<Student> filteredList = new ArrayList<>();
+        for(Student s:students){
+            if(s.getCgpa()<=maxcgpa&&s.getCgpa()>=mincgpa){
+                found=true;
+                filteredList.add(s);
+                System.out.printf("%-25s %-15s %-10.2f %-10s%n",s.getName(),s.getUsn(),s.getCgpa(),s.getBacklogs());
+            }
+        }
+        if(!found)
+            System.out.println("No Students found in that range...!!!");
+        else{
+            System.out.println("Export results to CSV ?  (YES/NO)");
+            String ch = sc.nextLine();
+            if(ch.equalsIgnoreCase("YES")){
+                System.out.print("Enter the file name: ");
+                String fname= sc.nextLine();
+                exportToCSV(filteredList,fname);
+            }
+        }
+        System.out.println("----------------------------------------------");
+    }
+    public void exportToCSV(ArrayList<Student> filteredList, String filename){
+        try{
+            FileWriter fw = new FileWriter(filename+".csv");
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write("Name,USN,DOB,CGPA,Backlogs,Address");
+            bw.newLine();
+            for(Student s:filteredList){
+                bw.write(s.toCSV());
+                bw.newLine();
+            }
+            bw.close();
+            System.out.println("data saved succesfully!");
+        }
+        catch(IOException e){
+            System.out.println("Error occured while writing data onto file: "+e);
+        }
+    }
 }
 public class StudentMain {
     public static void main(String[] args) {
@@ -341,6 +420,9 @@ public class StudentMain {
                         "\n9. Show Statistics" +
                         "\n10. Generate Report" +
                         "\n11. Department Statistics"+
+                        "\n12. Student Report Card"+
+                        "\n13. Backlog Students List"+
+                        "\n14. Filter by CGPA"+
                         "\nEnter your Choice : ");
                 System.out.flush();
                 int ch = sc.nextInt();
@@ -369,13 +451,25 @@ public class StudentMain {
                             System.out.println("Student with Usn : " + usn + " already exist");
                         break;
                     case 2:
-                        System.out.print("Enter the Usn to search : ");
-                        String searchusn = sc.nextLine();
-                        Student found = manager.searchStudent(searchusn);
-                        if (found != null) {
-                            System.out.println("Student found : " + found);
-                        } else
-                            System.out.println("Student not found....!!!");
+                        System.out.println("Search by\n1. USN\n2. Name");
+                        int srch= sc.nextInt();
+                        sc.nextLine();
+                        switch (srch) {
+                            case 1:
+                                System.out.print("Enter the Usn to search : ");
+                                String searchusn = sc.nextLine();
+                                Student found = manager.searchStudent(searchusn);
+                                if (found != null) {
+                                    System.out.println("Student found : " + found);
+                                } else
+                                    System.out.println("Student not found....!!!");
+                                break;
+                            case 2:
+                                manager.searchByName(sc);
+                                break;
+                            default:
+                                System.out.println("Invalid Choice...!!!");
+                        }
                         break;
                     case 3:
                         manager.displayAllStudents();
@@ -418,7 +512,21 @@ public class StudentMain {
                         break;
                     case 11:
                         manager.departmentStatistics();
+                        break;
+                    case 12:
                         manager.studentReportCard(sc);
+                        break;
+                    case 13:
+                        manager.backlogStudentsList();
+                        break;
+                    case 14:
+                        System.out.print("Enter the Minimum CGPA : ");
+                        double mincgpa=sc.nextDouble();
+                        sc.nextLine();
+                        System.out.print("Enter the Maximum CGPA : ");
+                        double maxcgpa=sc.nextDouble();
+                        sc.nextLine();
+                        manager.filterByCGPA(mincgpa,maxcgpa,sc);
                         break;
                     default:
                         System.out.println("Invalid Choice....!!!");
