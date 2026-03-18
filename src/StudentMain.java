@@ -92,12 +92,14 @@ class StudentManager{
             }
         }
         students.add(s);
+        DBConnection.insertStudent(s);
         return true;
     }
     public boolean deleteStudent(String usn) {
         for (Student s : students) {
             if (s.getUsn().equals(usn)) {
                 students.remove(s);
+                DBConnection.deleteStudent(usn);
                 return true;
             }
         }
@@ -170,6 +172,7 @@ class StudentManager{
                 case 6:
                     System.out.println("Updation Succesfull...!!!");
                     updating=false;
+                    DBConnection.updateStudent(s);
                     break;
                 default:
                     System.out.println("Invalid choice");
@@ -399,12 +402,15 @@ class StudentManager{
             System.out.println("Error occured while writing data onto file: "+e);
         }
     }
+    public void loadFromDB(){
+        students = DBConnection.loadFromDB();
+    }
 }
 public class StudentMain {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         StudentManager manager = new StudentManager();
-        manager.loadfromFile();
+        manager.loadFromDB();
         System.out.println("Student Management System - v1.0");
         while (true) {
             try {
@@ -446,7 +452,6 @@ public class StudentMain {
                         Student s = new Student(name, usn, dob, cgpa, backlogs, address);
                         if (manager.addStudent(s)) {
                             System.out.println("Student added succesfully");
-                            manager.saveToFile();
                         } else
                             System.out.println("Student with Usn : " + usn + " already exist");
                         break;
@@ -479,7 +484,6 @@ public class StudentMain {
                         String deleteusn = sc.nextLine();
                         if (manager.deleteStudent(deleteusn)) {
                             System.out.println("Student Deleted Succesfully...!!!");
-                            manager.saveToFile();
                         } else
                             System.out.println("Student with Usn : " + deleteusn + " not found...!!!");
                         break;
@@ -487,7 +491,6 @@ public class StudentMain {
                         System.out.println("Enter Usn of Student to update : ");
                         String dusn = sc.nextLine();
                         manager.UpdateStudent(dusn, sc);
-                        manager.saveToFile();
                         break;
                     case 6:
                         System.out.println("Exiting Program.....");
