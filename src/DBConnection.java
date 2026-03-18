@@ -23,8 +23,9 @@ public class DBConnection {
         }
     }
     public static void insertStudent(Student s) {
-        String query = "INSERT INTO Students (name, usn, dob, address, current_semester, batch_year)" +
-                " VALUES (?, ?, STR_TO_DATE(?, '%d-%m-%Y'), ?, 4, 2024)";
+        String query = "INSERT INTO Students (name, usn, dob, address, gender, section, department," +
+                " current_semester, batch_year)" +
+                " VALUES (?, ?, STR_TO_DATE(?, '%d-%m-%Y'), ?, ?, ?, ?, ?, ?, 4, 2024)";
         try {
             Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(query);
@@ -32,6 +33,9 @@ public class DBConnection {
             ps.setString(2, s.getUsn());
             ps.setString(3, s.getDob());
             ps.setString(4, s.getAddress());
+            ps.setString(7, s.getGender());
+            ps.setString(8, s.getSection());
+            ps.setString(9, s.getDepartment());
             ps.executeUpdate();
             System.out.println("Student inserted into MySQL successfully!");
             conn.close();
@@ -53,7 +57,11 @@ public class DBConnection {
                 double cgpa = rs.getDouble("cgpa");
                 int backlogs = rs.getInt("backlogs");
                 String address = rs.getString("address");
-                students.add(new Student(name, usn, dob, cgpa, backlogs, address));
+                String gender = rs.getString("gender");
+                String section = rs.getString("section");
+                String department = rs.getString("department");
+                double fees = rs.getDouble("fees");
+                students.add(new Student(name, usn, dob, cgpa, backlogs, address,gender,section,department,fees));
             }
             conn.close();
             System.out.println(students.size() + " students loaded from MySQL!");
@@ -110,6 +118,9 @@ public class DBConnection {
             ps.setDouble(3, s.getCgpa());
             ps.setInt(4, s.getBacklogs());
             ps.setString(5, s.getAddress());
+            ps.setString(6, s.getGender());
+            ps.setString(7, s.getSection());
+            ps.setString(8, s.getDepartment());
             ps.setString(6, s.getUsn());
             ps.executeUpdate();
             conn.close();

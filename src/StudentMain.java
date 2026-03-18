@@ -11,18 +11,30 @@ class Student{
     private double cgpa;
     private int backlogs;
     private String address;
+    private String gender;
+    private String section;
+    private String department;
+    private double fees;
 
     Student(String name,
             String usn,
             String dob,
             double cgpa,
             int backlogs,
-            String address
+            String address,
+            String gender,
+            String section,
+            String department,
+            double fees
     ){
         this.name=name;
         this.usn=usn;
         this.dob=dob;
         this.address=address;
+        this.gender = gender;
+        this.section = section;
+        this.department=department;
+        this.fees=fees;
         setCgpa(cgpa);
         setBacklogs(backlogs);
 
@@ -54,6 +66,24 @@ class Student{
     public void setAddress(String add){
         this.address=add;
     }
+    public String getGender(){
+        return gender;
+    }
+    public String getSection(){
+        return section;
+    }
+    public String getDepartment(){
+        return department;
+    }
+    public void setGender(String gender){
+        this.gender = gender;
+    }
+    public void setSection(String section){
+        this.section = section;
+    }
+    public void setDepartment(String department){
+        this.department = department;
+    }
     public void setCgpa(double cgpa){
         if(cgpa<0||cgpa>10){
             System.out.println("CGPA should be in the range 0-10..!!!");
@@ -77,7 +107,7 @@ class Student{
                 "\nAddress: " + address;
     }
     public String toCSV(){
-        return name+","+usn+","+dob+","+cgpa+","+backlogs+","+address;
+        return name+","+usn+","+dob+","+cgpa+","+backlogs+","+address+","+gender+","+section+","+department;
     }
 }
 class StudentManager{
@@ -204,29 +234,6 @@ class StudentManager{
         }
         catch(IOException e){
             System.out.println("Error occured while writing data onto file: "+e);
-        }
-    }
-    public void loadfromFile(){
-        try{
-            FileReader fr = new FileReader("src/students.csv");
-            BufferedReader br = new BufferedReader(fr);
-            String line;
-            br.readLine(); // to skip the first line header
-            while((line=br.readLine())!=null){
-                String parts[]=line.split(",");
-                Student s = new Student(parts[0],parts[1],parts[2],Double.parseDouble(parts[3]),
-                        Integer.parseInt(parts[4]),parts[5]);
-                if(!addStudent(s)) {
-                    System.out.println("Student with Usn" + parts[1] + " already exists...!!!");
-                }
-            }
-            br.close();
-        }
-        catch(FileNotFoundException e){
-            System.out.println("No existing data found, starting fresh!");
-        }
-        catch(IOException e){
-            System.out.println("Error loading file: " + e);
         }
     }
     public void sortStudents(Scanner sc){
@@ -449,7 +456,15 @@ public class StudentMain {
                         System.out.print("Backlogs : ");
                         int backlogs = sc.nextInt();
                         sc.nextLine();
-                        Student s = new Student(name, usn, dob, cgpa, backlogs, address);
+                        System.out.println("Gender(M/F): ");
+                        String gender = sc.nextLine();
+                        System.out.println("section(C/D): ");
+                        String section = sc.nextLine();
+                        System.out.println("Department: ");
+                        String department = sc.nextLine();
+                        System.out.println("Fees: ");
+                        double fees = sc.nextDouble();
+                        Student s = new Student(name, usn, dob, cgpa, backlogs, address,gender,section,department,fees);
                         if (manager.addStudent(s)) {
                             System.out.println("Student added succesfully");
                         } else
