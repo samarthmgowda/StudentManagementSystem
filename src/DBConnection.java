@@ -83,7 +83,9 @@ public class DBConnection {
                 String section = rs.getString("section");
                 String department = rs.getString("department");
                 double fees = rs.getDouble("fees");
-                students.add(new Student(name, usn, dob, cgpa, backlogs, address,gender,section,department,fees));
+                double paidAmount = rs.getDouble("paid_amount");
+                students.add(new Student(name, usn, dob, cgpa, backlogs, address,
+                        gender,section,department,fees,paidAmount));
             }
             conn.close();
             System.out.println(students.size() + " students loaded from MySQL!");

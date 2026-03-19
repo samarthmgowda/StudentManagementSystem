@@ -15,6 +15,7 @@ class Student{
     private String section;
     private String department;
     private double fees;
+    private double paidAmount;
 
     Student(String name,
             String usn,
@@ -25,7 +26,8 @@ class Student{
             String gender,
             String section,
             String department,
-            double fees
+            double fees,
+            double paidAmount
     ){
         this.name=name;
         this.usn=usn;
@@ -35,6 +37,7 @@ class Student{
         this.section = section;
         this.department=department;
         this.fees=fees;
+        this.paidAmount = paidAmount;
         setCgpa(cgpa);
         setBacklogs(backlogs);
 
@@ -72,6 +75,9 @@ class Student{
     public String getSection(){
         return section;
     }
+    public double getFees(){
+        return fees;
+    }
     public String getDepartment(){
         return department;
     }
@@ -83,6 +89,15 @@ class Student{
     }
     public void setDepartment(String department){
         this.department = department;
+    }
+    public double getPaidAmount(){
+        return paidAmount;
+    }
+    public void setPaidAmount(double paidAmount){
+        this.paidAmount = paidAmount;
+    }
+    public double getBalance(){
+        return fees - paidAmount;
     }
     public void setCgpa(double cgpa){
         if(cgpa<0||cgpa>10){
@@ -421,7 +436,28 @@ class StudentManager {
     public void loadFromDB() {
         students = DBConnection.loadFromDB();
     }
-
+    public void feeDefaulterList(){
+        if(students.isEmpty()){
+            System.out.println("No students found!");
+            return;
+        }
+        int defaulters=0;
+        double balance=0;
+        System.out.println("===== Fee Defaulter List =====");
+        System.out.printf("%-25s %-15s %-10s %-10s %-10s%n", "Name", "USN", "Total Fess","Fees paid","Balance");
+        System.out.println("------------------------------");
+        for(Student s:students){
+            if(s.getBalance()>0){
+                defaulters++;
+                balance+=s.getBalance();
+                System.out.printf("%-25s %-15s %-10s %-10s %-10s%n",
+                        s.getName(),s.getUsn(),s.getFees(),s.getPaidAmount(),s.getBalance());
+            }
+        }
+        System.out.println("------------------------------");
+        System.out.println("Total Defaulters: "+defaulters+" students");
+        System.out.println("Total pending amount: Rs. " +String.format("%,.0f", balance));
+    }
     public void placementEligibility(Scanner sc) {
         System.out.println("===== Placement Eligibility =====");
         System.out.println("1. Check eligibility for a student");
@@ -443,7 +479,6 @@ class StudentManager {
                 System.out.println("Invalid choice!");
         }
     }
-
     public void checkStudentEligibility(Scanner sc) {
         System.out.print("Enter the USN: ");
         String usn = sc.nextLine();
@@ -577,6 +612,7 @@ public class StudentMain {
                         "\n13. Backlog Students List"+
                         "\n14. Filter by CGPA"+
                         "\n15. Placement Eligibility"+
+                        "\n16. Fees Defaulters list"+
                         "\nEnter your Choice : ");
                 System.out.flush();
                 int ch = sc.nextInt();
@@ -605,7 +641,10 @@ public class StudentMain {
                         String department = sc.nextLine();
                         System.out.println("Fees: ");
                         double fees = sc.nextDouble();
-                        Student s = new Student(name, usn, dob, cgpa, backlogs, address,gender,section,department,fees);
+                        System.out.println("PaidAmount: ");
+                        double paidamount = sc.nextDouble();
+                        Student s = new Student(name, usn, dob, cgpa, backlogs,
+                                address,gender,section,department,fees,paidamount);
                         if (manager.addStudent(s)) {
                             System.out.println("Student added succesfully");
                         } else
@@ -689,6 +728,9 @@ public class StudentMain {
                         break;
                     case 15:
                         manager.placementEligibility(sc);
+                        break;
+                    case 16:
+                        manager.feeDefaulterList();
                         break;
                     default:
                         System.out.println("Invalid Choice....!!!");
