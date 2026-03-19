@@ -22,6 +22,28 @@ public class DBConnection {
             return null;
         }
     }
+    public static ArrayList<String[]> getCompanies(){
+        ArrayList<String[]> companies = new ArrayList<>();
+        String query = "SELECT * FROM Companies";
+        try{
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(query);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                String[] company = {
+                        rs.getString("company_id"),
+                        rs.getString("company_name"),
+                        rs.getString("min_cgpa"),
+                        rs.getString("max_backlogs")
+                };
+                companies.add(company);
+            }
+            conn.close();
+        } catch(SQLException e){
+            System.out.println("Error fetching companies: " + e.getMessage());
+        }
+        return companies;
+    }
     public static void insertStudent(Student s) {
         String query = "INSERT INTO Students (name, usn, dob, address, gender, section, department," +
                 " current_semester, batch_year)" +
