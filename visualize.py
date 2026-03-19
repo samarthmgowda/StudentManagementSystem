@@ -7,10 +7,13 @@ from reportlab.lib.styles import getSampleStyleSheet
 from sqlalchemy import create_engine
 import datetime
 import sys
+import os
 
 plt.style.use('ggplot')
 
-DB_URL = "mysql+mysqlconnector://root:3610@localhost/college_analytics"
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_URL = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@localhost/college_analytics"
 
 def load_data():
     engine = create_engine(DB_URL)
