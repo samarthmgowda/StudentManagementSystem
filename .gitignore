@@ -5,3 +5,5 @@ src/students.csv
 *.png
 student_report.pdf
 .ipnyb_checkpoints/
+updm.py
+update_sgpa.py
