@@ -12,6 +12,29 @@ public class DBConnection {
     private static final String USER = System.getenv("DB_USER");
     private static final String PASSWORD = System.getenv("DB_PASSWORD");
 
+    public static User login(String username, String password){
+        String query = "SELECT * FROM Users WHERE username = ? AND password = ?";
+        try{
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setString(1, username);
+            ps.setString(2, password);
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()){
+                return new User(
+                        rs.getString("username"),
+                        rs.getString("password"),
+                        rs.getString("role"),
+                        rs.getString("linked_usn")
+                );
+            }
+            conn.close();
+        } catch(SQLException e){
+            System.out.println("Login error: " + e.getMessage());
+        }
+        return null;
+    }
+
     public static Connection getConnection() {
         try {
             Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);

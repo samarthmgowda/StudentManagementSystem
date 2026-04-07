@@ -4,6 +4,32 @@ import java.util.Scanner;
 import java.util.Collections;
 import java.util.InputMismatchException;
 
+class User {
+    private String username;
+    private String password;
+    private String role;
+    private String linkedUsn;
+
+    public User(String username, String password, String role, String linkedUsn) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.linkedUsn = linkedUsn;
+    }
+    public String getUsername() {
+        return username;
+    }
+    public String getPassword() {
+        return password;
+    }
+    public String getRole() {
+        return role;
+    }
+    public String getLinkedUsn() {
+        return linkedUsn;
+    }
+}
+
 class Student{
     private String name;
     private String usn;
@@ -587,13 +613,38 @@ class StudentManager {
         System.out.println(filteredList.size() + " eligible students exported to "
                 + selectedCompany[1] + "_eligible.csv!");
     }
+
+    public void checkStudentEligibility(String usn){
+        Student s = searchStudent(usn);
+        if(s == null){
+            System.out.println("Student not found...!!!");
+            return;
+        }
+        ArrayList<String[]> companies = DBConnection.getCompanies();
+        int eligible = 0;
+        System.out.println("===== Placement Eligibility for " + s.getName() + " =====");
+        System.out.printf("%-25s %-10s %-10s%n", "Company", "Min CGPA", "Status");
+        System.out.println("------------------------------------------------");
+        for(String[] company : companies){
+            double minCgpa = Double.parseDouble(company[2]);
+            int maxBacklogs = Integer.parseInt(company[3]);
+            String status;
+            if(s.getCgpa() >= minCgpa && s.getBacklogs() <= maxBacklogs){
+                status = "Eligible ✓";
+                eligible++;
+            } else {
+                status = "Not Eligible ✗";
+            }
+            System.out.printf("%-25s %-10s %-10s%n", company[1], company[2], status);
+        }
+        System.out.println("------------------------------------------------");
+        System.out.println("Eligible for " + eligible + " out of " + companies.size() + " companies!");
+    }
+
 }
 public class StudentMain {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        StudentManager manager = new StudentManager();
-        manager.loadFromDB();
-        System.out.println("Student Management System - v1.0");
+
+    public static void showAdminMenu(StudentManager manager, Scanner sc){
         while (true) {
             try {
                 System.out.println("------- Student Database Menu --------" +
@@ -607,12 +658,12 @@ public class StudentMain {
                         "\n8. Top & Bottom performers" +
                         "\n9. Show Statistics" +
                         "\n10. Generate Report" +
-                        "\n11. Department Statistics"+
-                        "\n12. Student Report Card"+
-                        "\n13. Backlog Students List"+
-                        "\n14. Filter by CGPA"+
-                        "\n15. Placement Eligibility"+
-                        "\n16. Fees Defaulters list"+
+                        "\n11. Department Statistics" +
+                        "\n12. Student Report Card" +
+                        "\n13. Backlog Students List" +
+                        "\n14. Filter by CGPA" +
+                        "\n15. Placement Eligibility" +
+                        "\n16. Fees Defaulters list" +
                         "\nEnter your Choice : ");
                 System.out.flush();
                 int ch = sc.nextInt();
@@ -644,7 +695,7 @@ public class StudentMain {
                         System.out.println("PaidAmount: ");
                         double paidamount = sc.nextDouble();
                         Student s = new Student(name, usn, dob, cgpa, backlogs,
-                                address,gender,section,department,fees,paidamount);
+                                address, gender, section, department, fees, paidamount);
                         if (manager.addStudent(s)) {
                             System.out.println("Student added succesfully");
                         } else
@@ -652,7 +703,7 @@ public class StudentMain {
                         break;
                     case 2:
                         System.out.println("Search by\n1. USN\n2. Name");
-                        int srch= sc.nextInt();
+                        int srch = sc.nextInt();
                         sc.nextLine();
                         switch (srch) {
                             case 1:
@@ -719,12 +770,12 @@ public class StudentMain {
                         break;
                     case 14:
                         System.out.print("Enter the Minimum CGPA : ");
-                        double mincgpa=sc.nextDouble();
+                        double mincgpa = sc.nextDouble();
                         sc.nextLine();
                         System.out.print("Enter the Maximum CGPA : ");
-                        double maxcgpa=sc.nextDouble();
+                        double maxcgpa = sc.nextDouble();
                         sc.nextLine();
-                        manager.filterByCGPA(mincgpa,maxcgpa,sc);
+                        manager.filterByCGPA(mincgpa, maxcgpa, sc);
                         break;
                     case 15:
                         manager.placementEligibility(sc);
@@ -739,6 +790,119 @@ public class StudentMain {
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input! Please enter a valid input...!!!");
                 sc.nextLine();
+            }
+        }
+    }
+
+    public static void showStudentMenu(StudentManager manager, Scanner sc, User currentUser){
+        while(true){
+            try{
+                System.out.println("===== Student Menu ====="+
+                        "\n1. View My Report Card"+
+                        "\n2. Check My Placement Eligibility"+
+                        "\n3. Logout");
+                int ch = sc.nextInt();
+                sc.nextLine();
+                switch(ch){
+                    case 1:
+                        Student s = manager.searchStudent(currentUser.getLinkedUsn());
+                        if(s != null){
+                            System.out.println("======== Student Report Card ========");
+                            System.out.printf("%-15s : %s%n", "Name", s.getName());
+                            System.out.printf("%-15s : %s%n", "USN", s.getUsn());
+                            System.out.printf("%-15s : %s%n", "Date of Birth", s.getDob());
+                            System.out.printf("%-15s : %s%n", "CGPA", s.getCgpa());
+                            System.out.printf("%-15s : %s%n", "Backlogs", s.getBacklogs());
+                            System.out.printf("%-15s : %s%n", "Address", s.getAddress());
+                            System.out.println("=====================================");
+                        }
+                        break;
+                    case 2: manager.checkStudentEligibility(currentUser.getLinkedUsn()); break;
+                    case 3: System.out.println("Logged out!"); return;
+                    default: System.out.println("Invalid choice!");
+                }
+            } catch(InputMismatchException e){
+                System.out.println("Invalid input!");
+                sc.nextLine();
+            }
+        }
+    }
+
+    public static void showTeacherMenu(StudentManager manager, Scanner sc){
+        while(true){
+            try{
+                System.out.println("===== Teacher Menu ====="+
+                        "\n1. Search Student"+
+                        "\n2. Display Students"+
+                        "\n3. Sort Students"+
+                        "\n4. Top & Bottom Performers"+
+                        "\n5. Department Statistics"+
+                        "\n6. Show Statistics"+
+                        "\n7. Generate Report"+
+                        "\n8. Backlog Students List"+
+                        "\n9. Filter by CGPA"+
+                        "\n10. Placement Eligibility"+
+                        "\n11. Fee Defaulters"+
+                        "\n12. Logout");
+                int ch = sc.nextInt();
+                sc.nextLine();
+                switch(ch){
+                    case 1:
+                        System.out.println("Search by\n1. USN\n2. Name");
+                        int srch = sc.nextInt(); sc.nextLine();
+                        if(srch == 1){
+                            System.out.print("Enter USN: ");
+                            Student found = manager.searchStudent(sc.nextLine());
+                            if(found != null) System.out.println(found);
+                            else System.out.println("Not found!");
+                        } else manager.searchByName(sc);
+                        break;
+                    case 2: manager.displayAllStudents(); break;
+                    case 3: manager.sortStudents(sc); break;
+                    case 4: manager.topbottomPerformers(); break;
+                    case 5: manager.departmentStatistics(); break;
+                    case 6: manager.saveToFile(); manager.viewStatistics(); break;
+                    case 7: manager.saveToFile(); manager.generatereport(); break;
+                    case 8: manager.backlogStudentsList(); break;
+                    case 9:
+                        System.out.print("Min CGPA: "); double min = sc.nextDouble(); sc.nextLine();
+                        System.out.print("Max CGPA: "); double max = sc.nextDouble(); sc.nextLine();
+                        manager.filterByCGPA(min, max, sc); break;
+                    case 10: manager.placementEligibility(sc); break;
+                    case 11: manager.feeDefaulterList(); break;
+                    case 12: System.out.println("Logged out!"); return;
+                    default: System.out.println("Invalid choice!");
+                }
+            } catch(InputMismatchException e){
+                System.out.println("Invalid input!");
+                sc.nextLine();
+            }
+        }
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        StudentManager manager = new StudentManager();
+        manager.loadFromDB();
+        System.out.println("Student Management System - v1.0");
+        while(true) {
+            System.out.println("===== LOGIN =====");
+            System.out.print("Username: ");
+            String username = sc.nextLine();
+            System.out.print("Password: ");
+            String password = sc.nextLine();
+            User currentUser = DBConnection.login(username, password);
+            if (currentUser == null) {
+                System.out.println("Invalid credentials!");
+                return;
+            } else
+                System.out.println("Login Succesfull...!!!");
+
+            if (currentUser.getRole().equals("ADMIN")) {
+                showAdminMenu(manager, sc);
+            } else if (currentUser.getRole().equals("TEACHER")) {
+                showTeacherMenu(manager, sc);
+            } else if (currentUser.getRole().equals("STUDENT")) {
+                showStudentMenu(manager, sc, currentUser);
             }
         }
     }
