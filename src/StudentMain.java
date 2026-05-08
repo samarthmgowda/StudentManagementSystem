@@ -418,7 +418,7 @@ class StudentManager {
 
     public void filterByCGPA(double mincgpa, double maxcgpa, Scanner sc) {
         System.out.println("==== Students in CGPA range " + mincgpa + " - " + maxcgpa + " ====");
-        System.out.printf("%-25s %-15s %-10.2f %-10s%n", "Name", "USN", "CGPA", "Backlogs");
+        System.out.printf("%-25s %-15s %-10.2s %-10s%n", "Name", "USN", "CGPA", "Backlogs");
         System.out.println("----------------------------------------------");
         boolean found = false;
         ArrayList<Student> filteredList = new ArrayList<>();
@@ -426,7 +426,7 @@ class StudentManager {
             if (s.getCgpa() <= maxcgpa && s.getCgpa() >= mincgpa) {
                 found = true;
                 filteredList.add(s);
-                System.out.printf("%-25s %-15s %-10.2f %-10s%n", s.getName(), s.getUsn(), s.getCgpa(), s.getBacklogs());
+                System.out.printf("%-25s %-15s %-12.2fa %-10s%n", s.getName(), s.getUsn(), s.getCgpa(), s.getBacklogs());
             }
         }
         if (!found)

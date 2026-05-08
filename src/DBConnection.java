@@ -68,9 +68,8 @@ public class DBConnection {
         return companies;
     }
     public static void insertStudent(Student s) {
-        String query = "INSERT INTO Students (name, usn, dob, address, gender, section, department," +
-                " current_semester, batch_year)" +
-                " VALUES (?, ?, STR_TO_DATE(?, '%d-%m-%Y'), ?, ?, ?, ?, ?, ?, 4, 2024)";
+        String query = "INSERT INTO Students" + "(name, usn, dob, address, gender, section, department,current_semester, batch_year)" +
+                " VALUES (?, ?, STR_TO_DATE(?, '%d-%m-%Y'), ?, ?, ?, ?, 4, 2024)";
         try {
             Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(query);
@@ -78,15 +77,15 @@ public class DBConnection {
             ps.setString(2, s.getUsn());
             ps.setString(3, s.getDob());
             ps.setString(4, s.getAddress());
-            ps.setString(7, s.getGender());
-            ps.setString(8, s.getSection());
-            ps.setString(9, s.getDepartment());
+            ps.setString(5, s.getGender());
+            ps.setString(6, s.getSection());
+            ps.setString(7, s.getDepartment());
             ps.executeUpdate();
-            System.out.println("Student inserted into MySQL successfully!");
             conn.close();
         } catch (SQLException e) {
             System.out.println("Error inserting student: " + e.getMessage());
         }
+        System.out.println("Student inserted into MySQL successfully!");
     }
     public static ArrayList<Student> loadFromDB() {
         ArrayList<Student> students = new ArrayList<>();
